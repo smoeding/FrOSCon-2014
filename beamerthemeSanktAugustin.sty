@@ -1,0 +1,64 @@
+%
+% Beamer theme for FrOSCon 2014
+%
+\mode<presentation>
+
+\usecolortheme{orchid}
+\usecolortheme{seahorse}
+\useinnertheme[shadow]{rounded}
+\useoutertheme{infolines}
+
+% Primary color
+\definecolor{rblue}{RGB}{133,151,190}
+
+\setbeamercolor{palette primary}{use=structure,fg=black,bg=rblue}
+\setbeamercolor{palette secondary}{use=structure,fg=black,bg=structure.fg!25!white}
+\setbeamercolor{palette tertiary}{use=structure,fg=black,bg=structure.fg!30!white}
+\setbeamercolor{palette quaternary}{use=structure,fg=black,bg=structure.fg!35!white}
+
+\setbeamercolor{section in toc}{use=structure,fg=black}
+\setbeamercolor{section in toc shaded}{use=structure,fg=black}
+
+\setbeamercolor{local structure}{fg=rblue}
+
+\setbeamerfont{title}{size=\normalfont\huge}
+\setbeamerfont{subtitle}{size=\normalfont\large}
+\setbeamerfont{author}{size=\normalfont\large}
+\setbeamerfont{date}{size=\normalfont\small}
+
+\setbeamertemplate{headline}[default]
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{footline}{}
+\setbeamertemplate{note page}[plain]
+
+\setbeamertemplate{section in toc}{%
+\leavevmode\leftskip=2ex%
+\llap{\raisebox{0.082em}{\textcolor{rblue}{$\blacktriangleright$}}\kern1ex}%
+\inserttocsection\par%
+}
+
+\setbeamertemplate{title page}{%
+\begin{center}
+  \begin{beamercolorbox}[sep=8pt,center,rounded=true,shadow=\beamer@themerounded@shadow]{title}
+    \usebeamerfont{title}\inserttitle\par
+    \vspace{0.25em}%
+    \usebeamerfont{subtitle}\insertsubtitle\par
+  \end{beamercolorbox}
+\vspace{5ex}%
+  \begin{beamercolorbox}[sep=8pt,center]{author}
+    \usebeamerfont{author}\insertauthor\par
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=2pt,center]{institute}
+    \usebeamerfont{institute}\insertinstitute\par
+  \end{beamercolorbox}
+\vspace{5ex}%
+  \begin{beamercolorbox}[sep=2pt,center]{date}
+    \usebeamerfont{date}\insertdate\par
+  \end{beamercolorbox}
+\vspace{0.5ex}%
+  {\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}
+\end{center}
+}
+
+\mode<all>

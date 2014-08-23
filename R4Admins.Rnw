@@ -1,0 +1,785 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[ngerman,aspectratio=43,nohandout]{beamer}
+\usetheme{SanktAugustin}
+
+%\setbeameroption{show notes}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{bera}
+\usepackage{microtype}
+
+\title{Datenanalyse mit R für Administratoren}
+\subtitle{Beispiele aus der Praxis}
+\author{Stefan Möding}
+\date{23. August 2014}
+\titlegraphic{\includegraphics[scale=0.25]{froscon}}
+
+\usepackage{appendixnumberbeamer}
+
+\usepackage{array}
+\usepackage{graphicx,color}
+\graphicspath{ {./gfx/} }
+
+\usepackage{nicefrac}
+
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes,backgrounds}
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{background grid}=[draw,black!50,step=.5cm]
+\tikzstyle{redmark}=[red,line width=1pt]
+\tikzstyle{nopadding}=[inner sep=0pt]
+
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,frame=lines,showstringspaces=false}
+\lstnewenvironment{XMLConfig}{\lstset{morestring=[b]"}}{}
+
+<<setup,include=FALSE>>=
+library(knitr)
+
+options(width=70, digits=7, scipen=6, stringsAsFactors=FALSE)
+options(str=strOptions(strict.width='cut'))
+
+# set global chunk options
+opts_knit$set(progress=TRUE, verbose=FALSE)
+opts_chunk$set(prompt=FALSE, comment=NA, tidy=FALSE)
+opts_chunk$set(size='footnotesize', out.width='0.97\\textwidth')
+opts_chunk$set(fig.width=7, fig.height=3.2, fig.align='center')
+
+knit_hooks$set(small.mar=function(before, options, envir) {
+if (before && options$fig.show != 'none')
+  par(mar=c(4.1, 4.1, 1.1, 0.1))
+})
+@
+
+\newcommand{\iconentry}[2]{\includegraphics[scale=0.15]{#1} & #2\tabularnewline}
+\newcommand{\mailto}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
+
+\newcounter{Example}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\section*{Inhalt}
+\begin{frame}{\insertsection}{\strut}
+\tableofcontents[hideallsubsections,sections={1-5}]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{R in aller Kürze}
+\subsection{R und RStudio}
+
+\begin{frame}{\insertsection}{\insertsubsection}
+\begin{columns}[onlytextwidth]
+\begin{column}[c]{.7\textwidth}
+R
+\begin{itemize}
+\item Programmiersprache \& -umgebung für statistisches Rechnen und Grafik
+\item GNU General Public License
+\item UNIX/Linux, MacOS, Windows
+\item \url{http://www.r-project.org}
+\end{itemize}
+\end{column}
+
+\note{Stammt von S ab (Bell Labs, 1976)}
+\note{Entwickelt ab 1992}
+\note{Console-Anwendung, In-Memory Verarbeitung}
+
+\begin{column}[c]{0.25\textwidth}
+\includegraphics[scale=0.35]{Rlogo}
+\end{column}
+\end{columns}
+
+\vspace{\baselineskip}\pause
+
+\begin{columns}[onlytextwidth]
+\begin{column}[c]{.7\textwidth}
+RStudio
+\begin{itemize}
+\item Integrated Development Environment
+\item GNU Affero General Public License
+\item Linux, MacOS, Windows
+\item \url{http://www.rstudio.com}
+\end{itemize}
+\end{column}
+
+\begin{column}[c]{0.25\textwidth}
+\includegraphics[scale=0.35]{RStudio}
+\end{column}
+\end{columns}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Stärken}
+\begin{frame}{\insertsection}{\insertsubsection}
+
+Stärken von R
+\begin{itemize}
+\item "`Code"' statt "`Click"'
+  \begin{itemize}
+  \item nachvollziehbar
+  \item reproduzierbar
+  \item versionierbar
+  \end{itemize}\pause
+\item Schnittstellen
+  \begin{itemize}
+  \item Import: CSV, XML, Excel, Access, Oracle, PostgreSQL, MySQL
+  \item Export: PNG, JPG, SVG, PDF, HTML, Markdown, \LaTeX
+  \end{itemize}\pause
+\item CRAN --- Comprehensive R Archive Network
+  \begin{itemize}
+  \item $\approx 5800$ Pakete (August 2014)
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\note{TIOBE Index: http://www.tiobe.com/index.php/content/paperinfo/tpci/index.html}
+\note{Programming Language Ranking: http://redmonk.com/sogrady/2014/06/13/language-rankings-6-14/}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\stepcounter{Example}
+\section{Beispiel \theExample: Antwortzeiten eines Tomcat}
+
+<<echo=FALSE>>=
+read_chunk('tomcat-analyze.R')
+@
+
+%-----------------------------------------------------------------------------
+\subsection{Aufgabenstellung}
+\begin{frame}{\insertsection}{\insertsubsection}
+
+Antwortzeiten eines Apache Tomcat
+\pause
+\begin{itemize}
+\item Typische Werte
+\item Verteilung
+\item Ausreißer
+\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Logfile als Datenquelle}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+
+\begin{tikzpicture}%[show background grid]
+\node[nopadding]{%
+\begin{XMLConfig}
+<Valve className="org.apache.catalina.valves.AccessLogValve"
+       resolveHosts="false" directory="logs"
+       prefix="tomcat_access_log." suffix=".txt"
+       pattern="%h %l %u %t &quot;%r&quot; %s %b %D" />
+\end{XMLConfig}};
+%\fill (0,0) circle (2pt);
+\coordinate (m1) at (3.85,-0.5);
+\end{tikzpicture}
+
+\pause
+
+\begin{tikzpicture}[overlay]
+\draw[redmark] (m1) circle (11pt and 9pt);
+\node at ($(m1)+(-1.7,-0.7)$) [red] {Verarbeitungsdauer des Requests (msec)};
+\end{tikzpicture}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Datenimport}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+
+\begin{tikzpicture}%[show background grid]
+\node[nopadding]{%
+\begin{minipage}{0.999\textwidth}
+<<tomcat-analyze-read>>=
+@
+\end{minipage}
+};
+%\fill (0,0) circle (2pt);
+\coordinate (m1) at (-5.5,-0.4);
+\end{tikzpicture}
+
+\vspace{0.6\baselineskip}\pause
+
+\tikz[anchor=base,baseline]%
+\node[nopadding] (df) {Data Frame:}; Zeilen \& Spalten
+
+\begin{tikzpicture}[overlay]
+\draw[->,redmark] (df) to[in=290,out=130] (m1);
+\end{tikzpicture}
+
+\vspace{0.6\baselineskip}\pause
+Spaltennamen anpassen
+<<tomcat-analyze-names>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+%\subsection{Struktur eines Data Frames}
+%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+%
+%\begin{tikzpicture}%[show background grid]
+%\node[nopadding]{%
+%\begin{minipage}{0.999\textwidth}
+%<<tomcat-analyze-str>>=
+%@
+%\end{minipage}
+%};
+%%\fill (0,0) circle (2pt);
+%\coordinate (m1) at (-1.6,1.45);
+%\coordinate (m2) at (-2.84,-1.6);
+%\coordinate (m3) at (-5.15,0);
+%\coordinate (m4) at (1.55,-2.21);
+%\end{tikzpicture}
+%
+%\pause
+%
+%\begin{tikzpicture}[overlay]
+%\draw[redmark] (m1) circle (70pt and 10pt);
+%\node at ($(m1)+(2,0.55)$) [red] {Dimension};
+%\end{tikzpicture}
+%
+%\pause
+%
+%\begin{tikzpicture}[overlay]
+%\draw[redmark] (m3) circle (16pt and 13pt);
+%\node at ($(m3)+(0.93,-0.62)$) [red] {Attribute};
+%\end{tikzpicture}
+%
+%\pause
+%
+%\begin{tikzpicture}[overlay]
+%\draw[redmark] (m2) circle (11pt and 30pt);
+%\node at ($(m2)+(0,-1.4)$) [red] {Datentypen};
+%\end{tikzpicture}
+%
+%\pause
+%
+%\begin{tikzpicture}[overlay]
+%\draw[redmark] (m4) circle (40pt and 9pt);
+%\node at ($(m4)+(0,-0.6)$) [red] {einige Werte};
+%\end{tikzpicture}
+%
+%\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Einfache Kennzahlen}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+Wertebereich
+<<tomcat-analyze-range>>=
+@
+
+\vspace{\baselineskip}\pause
+
+Mittelwert
+<<tomcat-analyze-mean>>=
+@
+
+\note{Der Mittelwert ist nicht immer ein sinnvoller Repräsentant der Menge\\
+vgl. schiefe Verteilung (z.B. der I/O Zeiten)}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+Median
+<<tomcat-analyze-median>>=
+@
+
+\note{Median: ungrade Anzahl Werte, gerade Anzahl Werte}
+\vspace{\baselineskip}\pause
+
+Streuung
+<<tomcat-analyze-iqr>>=
+@
+
+\vspace{\baselineskip}\pause
+
+Quantile (\dots in 99\% der Fälle liegt die Antwortzeit unter \dots)
+<<tomcat-analyze-quantile>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Häufigkeitsverteilung: Stamm-Blatt-Diagramm}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-analyze-stem>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Häufigkeitsverteilung: Stripchart}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-analyze-stripchart, small.mar=TRUE>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Häufigkeitsverteilung: Histogramm}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-analyze-hist, small.mar=TRUE>>=
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\stepcounter{Example}
+%\section{Beispiel \theExample: Nutzung Apache Virtual Hosts}
+%
+%<<echo=FALSE>>=
+%read_chunk('apache-treemap.R')
+%@
+%
+%-----------------------------------------------------------------------------
+%\subsection{Aufgabenstellung}
+%\begin{frame}{\insertsection}{\insertsubsection}
+%Apache Web Server
+%\begin{itemize}
+%\item Zeitlichen Anteile der einzelnen Virtual Hosts
+%\end{itemize}
+%
+%\vspace{\baselineskip}\pause
+%
+%Visualisierung: Treemap\pause
+%\begin{itemize}[<+->]
+%\item Hierarchie $\Rightarrow$ verschachtelte Rechtecke
+%\item Darzustellender Wert $\Rightarrow$ Fläche
+%\item Zusätzliche Kategorie $\Rightarrow$ Farbe
+%\end{itemize}
+%\end{frame}
+%
+%-----------------------------------------------------------------------------
+%\subsection{Import der Daten}
+%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+%
+%\begin{tikzpicture}%[show background grid]
+%\node[nopadding]{%
+%\begin{lstlisting}
+%LogFormat "\"%{%Y-%m-%d %H:%M:%S}t\" %V %m \"%U\" \"%q\"
+%    %{Content-Type}o %s %B %O %D" mylogformat
+%\end{lstlisting}};
+%\fill (0,0) circle (2pt);
+%\coordinate (m1) at (0.6,-0.05);
+%\end{tikzpicture}
+%
+%\pause
+%
+%\begin{tikzpicture}[overlay]
+%\draw[redmark] (m1) circle (11pt and 9pt);
+%\node at ($(m1)+(-1.7,-0.7)$) [red] {Verarbeitungsdauer des Requests ($\mu$sec)};
+%\end{tikzpicture}
+%
+%\vspace{\baselineskip}\pause
+%
+%<<apache-treemap-load>>=
+%@
+%\end{frame}
+%
+%-----------------------------------------------------------------------------
+%\subsection{Aufbereitung der Daten}
+%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+%
+%Aufbereitung
+%\begin{itemize}
+%\item Datentyp ändern
+%\item Formate anpassen
+%\item Attribute löschen \& hinzufügen
+%\end{itemize}
+%
+%<<apache-treemap-cleanup>>=
+%@
+%\end{frame}
+%
+%-----------------------------------------------------------------------------
+%\subsection{Resultat der Aufbereitung}
+%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+%<<apache-treemap-tail>>=
+%@
+%\end{frame}
+%
+%-----------------------------------------------------------------------------
+%\subsection{Treemap der zeitlichen Belegung}
+%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+%<<apache-treemap-plot, small.mar=TRUE>>=
+%@
+%\end{frame}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\stepcounter{Example}
+\section{Beispiel \theExample: Prognosen mit RRD}
+
+<<echo=FALSE>>=
+options(digits=4)
+read_chunk('forecast-hw.R')
+@
+
+%-----------------------------------------------------------------------------
+\subsection{Aufgabenstellung}
+\begin{frame}{\insertsection}{\insertsubsection}
+
+\begin{columns}[onlytextwidth]
+\begin{column}[c]{.75\textwidth}
+RRD --- Round-Robin-Database
+\pause
+\begin{itemize}
+\item Aggregation \& Visualisierung von Zeitreihen\pause
+\item Cacti, Ganglia, Icinga, Munin, Nagios, \dots
+\end{itemize}
+\end{column}
+
+\begin{column}[c]{.22\textwidth}
+\includegraphics[scale=0.3]{rrddemo}
+\end{column}
+\end{columns}
+
+\vspace{\baselineskip}\pause
+
+Prognosen mit RRD
+\pause
+\begin{itemize}
+\item Möglichkeit zur Erkennung unüblicher Auslastung\pause
+\item Holt-Winters-Algorithmus\\
+Parameter $\alpha$ (Niveau), $\beta$ (Trend), $\gamma$ (Saison)
+\end{itemize}
+
+\note{Vorhersagen sind schwierig, insbesondere wenn sie die Zukunft betreffen}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\begin{frame}{\insertsection}{\insertsubsection}
+
+Parameter $\alpha$, $\beta$ und $\gamma$ raten?
+
+\begin{center}
+\includegraphics[width=0.95\textwidth]{forecast1}
+\end{center}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Import der Daten}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<forecast-prepare>>=
+@
+<<forecast-subset, include=FALSE>>=
+@
+
+\vspace{\baselineskip}\pause
+
+<<forecast-head>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Bestimmung der Parameter}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+Periodische Zeitreihe mit 8640 Werten pro Periode
+<<forecast-ts>>=
+@
+
+\vspace{\baselineskip}\pause
+
+Parameter ermitteln
+<<forecast-hw>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Anwendung der ermittelten Parameter}
+\begin{frame}{\insertsection}{\insertsubsection}
+Bessere Prognose
+\begin{itemize}
+\item $\alpha = \Sexpr{signif(hw$alpha, 3)}$
+\item $\beta = \Sexpr{signif(hw$beta, 3)}$
+\item $\gamma = \Sexpr{signif(hw$gamma, 3)}$
+\end{itemize}
+
+\vspace{\baselineskip}
+
+\begin{center}
+\includegraphics[width=0.95\textwidth]{forecast2}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\stepcounter{Example}
+\section{Beispiel \theExample: Universal Scalability Law}
+
+<<echo=FALSE>>=
+options(digits=4)
+read_chunk('tomcat-usl.R')
+@
+
+%-----------------------------------------------------------------------------
+\subsection{Aufgabenstellung}
+\begin{frame}{\insertsection}{\insertsubsection}
+Skalierbarkeit eines Tomcat Servers
+\pause
+\begin{itemize}
+\item Maximaler Durchsatz
+\item Limitierung der Skalierbarkeit
+\item Prognose einer Optimierung
+\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Einordnung}
+\begin{frame}{\insertsection}{\insertsubsection}
+
+USL --- Universal Scalability Law
+\pause
+\begin{itemize}
+\item Modell zur Quantifizierung der Skalierbarkeit
+  \begin{itemize}
+    \item Hardware: Anzahl Hosts, CPUs, Cores, \dots
+    \item Software: Anzahl Clients, Threads, \dots
+  \end{itemize}\pause
+\item Entwickelt von Dr. Neil J. Gunther
+  \begin{itemize}
+    \item \emph{Guerrilla Capacity Planning}, Springer, 2007
+    \item \url{http://www.perfdynamics.com}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Messreihe als Ausgangspunkt}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-usl-read, echo=FALSE>>=
+@
+
+Messreihe für zunehmende Anzahl Clients
+<<tomcat-usl-data>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Scatterplot der Messreihe}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-usl-plot-data, small.mar=TRUE>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Erstellung des USL Modells}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+USL Modell erstellen
+
+<<tomcat-usl-model>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Darstellung des USL Modells}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-usl-plot-model, small.mar=TRUE>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Interpretation der Parameter}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+
+\begin{tikzpicture}%[show background grid]
+\node[nopadding]{%
+\begin{minipage}{0.999\textwidth}
+<<tomcat-usl-coef>>=
+@
+\end{minipage}
+};
+%\fill (0,0) circle (2pt);
+\coordinate (sigma1) at (-5.3,-0.9);
+\coordinate (kappa1) at (-3.3,-0.9);
+\end{tikzpicture}
+
+\vspace{1.2\baselineskip}\pause
+
+\begin{columns}[onlytextwidth]
+\begin{column}[t]{.48\textwidth}% CGP p. 49 Definition 4.3
+\tikz[anchor=base,baseline]%
+\node[nopadding] (sigma2) {\emph{Contention}};, \emph{Serial Fraction}:\\
+Overhead durch rein serielle Ausführung
+\end{column}
+
+\begin{tikzpicture}[overlay]
+\draw[->,redmark] (sigma2) to[in=280,out=110] (sigma1);
+\end{tikzpicture}
+
+\pause
+
+\begin{column}[t]{.48\textwidth}% CGP p. 57 Definition 4.7
+\tikz[anchor=base,baseline]%
+\node[nopadding] (kappa2) {\emph{Coherency Delays}:};\\
+Overhead zur Gewährleistung eines kohärenten und konsistenten Zustandes
+\end{column}
+\end{columns}
+
+\begin{tikzpicture}[overlay]
+\draw[->,redmark] (kappa2) to[in=320,out=150] (kappa1);
+\end{tikzpicture}
+
+\pause
+
+\begin{columns}[onlytextwidth]
+\begin{column}[t]{.48\textwidth}
+\begin{itemize}
+\item Queues
+\item Locks
+\item \dots
+\end{itemize}
+\end{column}
+
+\pause
+
+\begin{column}[t]{.48\textwidth}
+\begin{itemize}
+\item Punkt-zu-Punkt Synchronisierung
+\item Abgleich von Caches
+\item \dots
+\end{itemize}
+\end{column}
+\end{columns}
+
+\note{Sigma und Kappa korrespondieren zu technischen zwei Effekten}
+
+\end{frame}
+
+%\begin{quote}
+%A rough guideline says anything bigger than $2\%$ to $3\%$ contention is
+%uncool. --- Neil J. Gunther
+%\end{quote}
+
+%-----------------------------------------------------------------------------
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+<<tomcat-usl-overhead, echo=FALSE>>=
+@
+
+\begin{tikzpicture}%[show background grid]
+\node[nopadding]{%
+\begin{minipage}{0.999\textwidth}
+<<tomcat-usl-plot-overhead, echo=FALSE, fig.height=4.4>>=
+@
+\end{minipage}
+};
+%\fill (0,0) circle (2pt);
+\coordinate (p1) at (-3,-0.1);
+\coordinate (p2) at (-3,-0.9);
+\coordinate (t1) at (-2.4,-0.8);
+\end{tikzpicture}
+
+\pause
+
+\begin{tikzpicture}[overlay]
+\draw[->,redmark] (p1) to[controls=+(0:0.9) and +(0:0.9)] (p2);
+\node [red,anchor=west] at (t1)
+  {nur noch $\approx\Sexpr{loadtest.diff}\%$ Verbesserung};
+\end{tikzpicture}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Auswertung des USL Modells}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+Prognose für Durchsatz
+<<tomcat-usl-scalability>>=
+@
+
+\note{Funktionen sind First-Class Objekte}
+\note{wie in Lisp, Scheme, Haskell, JavaScript, Smalltalk}
+
+\pause
+
+Maximaler Durchsatz
+<<tomcat-usl-peak>>=
+@
+\end{frame}
+
+%-----------------------------------------------------------------------------
+\subsection{Was-wäre-wenn-Analyse}
+\begin{frame}[fragile]{\insertsection}{\insertsubsection}
+Annahme: Optimierung reduziert Zeit in serieller Verarbeitung auf $2\%$
+<<tomcat-usl-predict-peak>>=
+@
+
+\pause
+
+<<tomcat-usl-predict-scalability>>=
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Kontakt}
+\begin{frame}{\insertsection}{\strut}
+
+\begin{center}
+\textbf{\Huge Vielen Dank!}
+\end{center}
+
+%Icons from: https://www.iconfinder.com/search/?q=iconset:simple-icons
+\begin{tabular}{m{40pt}l}
+\iconentry{email}{\mailto{stm@kill-9.net}}
+\iconentry{twitter}{\nolinkurl{@UnixMagus}}
+\iconentry{blogger}{\url{http://www.moeding.net}}
+\iconentry{github}{\url{https://github.com/smoeding}}
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Referenz}
+\begin{frame}{\insertsection}{\strut}
+
+\nocite{Brutlag:2000:ABD:1045502.1045530}
+\nocite{Gunther:2007}
+\nocite{DBLP:journals/corr/abs-0808-1431}
+\nocite{R:usl}
+\nocite{Leech:simpleicons}
+
+\begin{scriptsize}
+\bibliographystyle{plain}
+\bibliography{R4Admins}
+\end{scriptsize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+\section{Universal Scalability Law}
+\begin{frame}{\appendixname}{\insertsection}
+Kapazität $X$ (z.B. Durchsatz) bei p-facher Parallelisierung
+
+\begin{equation*}
+\frac{X(p)}{X(1)} = \frac{p}{%
+1 \: + %
+\tikz[anchor=base,baseline] \node (sigma1) {$\sigma$}; (p - 1) \; + %
+\tikz[anchor=base,baseline] \node (kappa1) {$\kappa$}; p (p - 1)}
+\end{equation*}
+
+\vspace{\baselineskip}
+
+\begin{columns}[onlytextwidth]
+\begin{column}[t]{.48\textwidth}
+\tikz[anchor=base,baseline]%
+\node[nopadding] (sigma2) {\emph{Contention}, \emph{Serial Fraction}};
+\end{column}
+
+\begin{column}[t]{.48\textwidth}
+\tikz[anchor=base,baseline]%
+\node[nopadding] (kappa2) {\emph{Coherency Delays}};
+\end{column}
+\end{columns}
+
+\begin{tikzpicture}[overlay]
+\draw[->,redmark] (sigma2) to[in=240] (sigma1);
+\draw[->,redmark] (kappa2) to[in=270, out=120] (kappa1);
+\end{tikzpicture}
+
+\vspace{2\baselineskip}
+
+\begin{tabular}{lc}
+Ideale Laufzeit bei p-facher Parallelisierung & $\nicefrac{1}{p}$ \\
+\noalign{\medskip}
+Overhead durch Contention (Queues, Locks, \dots) & $\frac{p-1}{p}\times\sigma$ \\
+\noalign{\medskip}
+Overhead durch Coherency (P2P-Sync, Caches, \dots) & $\frac{p-1}{2}\times\kappa$ \\
+\end{tabular}
+\end{frame}
+
+\end{document}
