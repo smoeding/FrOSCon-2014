@@ -1,5 +1,5 @@
 % !TEX encoding = UTF-8 Unicode
-\documentclass[ngerman,aspectratio=43,nohandout]{beamer}
+\documentclass[ngerman,aspectratio=43,handout]{beamer}
 \usetheme{SanktAugustin}
 
 %\setbeameroption{show notes}
@@ -218,54 +218,6 @@ Spaltennamen anpassen
 \end{frame}
 
 %-----------------------------------------------------------------------------
-%\subsection{Struktur eines Data Frames}
-%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
-%
-%\begin{tikzpicture}%[show background grid]
-%\node[nopadding]{%
-%\begin{minipage}{0.999\textwidth}
-%<<tomcat-analyze-str>>=
-%@
-%\end{minipage}
-%};
-%%\fill (0,0) circle (2pt);
-%\coordinate (m1) at (-1.6,1.45);
-%\coordinate (m2) at (-2.84,-1.6);
-%\coordinate (m3) at (-5.15,0);
-%\coordinate (m4) at (1.55,-2.21);
-%\end{tikzpicture}
-%
-%\pause
-%
-%\begin{tikzpicture}[overlay]
-%\draw[redmark] (m1) circle (70pt and 10pt);
-%\node at ($(m1)+(2,0.55)$) [red] {Dimension};
-%\end{tikzpicture}
-%
-%\pause
-%
-%\begin{tikzpicture}[overlay]
-%\draw[redmark] (m3) circle (16pt and 13pt);
-%\node at ($(m3)+(0.93,-0.62)$) [red] {Attribute};
-%\end{tikzpicture}
-%
-%\pause
-%
-%\begin{tikzpicture}[overlay]
-%\draw[redmark] (m2) circle (11pt and 30pt);
-%\node at ($(m2)+(0,-1.4)$) [red] {Datentypen};
-%\end{tikzpicture}
-%
-%\pause
-%
-%\begin{tikzpicture}[overlay]
-%\draw[redmark] (m4) circle (40pt and 9pt);
-%\node at ($(m4)+(0,-0.6)$) [red] {einige Werte};
-%\end{tikzpicture}
-%
-%\end{frame}
-
-%-----------------------------------------------------------------------------
 \subsection{Einfache Kennzahlen}
 \begin{frame}[fragile]{\insertsection}{\insertsubsection}
 Wertebereich
@@ -323,88 +275,6 @@ Quantile (\dots in 99\% der Fälle liegt die Antwortzeit unter \dots)
 @
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\stepcounter{Example}
-%\section{Beispiel \theExample: Nutzung Apache Virtual Hosts}
-%
-%<<echo=FALSE>>=
-%read_chunk('apache-treemap.R')
-%@
-%
-%-----------------------------------------------------------------------------
-%\subsection{Aufgabenstellung}
-%\begin{frame}{\insertsection}{\insertsubsection}
-%Apache Web Server
-%\begin{itemize}
-%\item Zeitlichen Anteile der einzelnen Virtual Hosts
-%\end{itemize}
-%
-%\vspace{\baselineskip}\pause
-%
-%Visualisierung: Treemap\pause
-%\begin{itemize}[<+->]
-%\item Hierarchie $\Rightarrow$ verschachtelte Rechtecke
-%\item Darzustellender Wert $\Rightarrow$ Fläche
-%\item Zusätzliche Kategorie $\Rightarrow$ Farbe
-%\end{itemize}
-%\end{frame}
-%
-%-----------------------------------------------------------------------------
-%\subsection{Import der Daten}
-%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
-%
-%\begin{tikzpicture}%[show background grid]
-%\node[nopadding]{%
-%\begin{lstlisting}
-%LogFormat "\"%{%Y-%m-%d %H:%M:%S}t\" %V %m \"%U\" \"%q\"
-%    %{Content-Type}o %s %B %O %D" mylogformat
-%\end{lstlisting}};
-%\fill (0,0) circle (2pt);
-%\coordinate (m1) at (0.6,-0.05);
-%\end{tikzpicture}
-%
-%\pause
-%
-%\begin{tikzpicture}[overlay]
-%\draw[redmark] (m1) circle (11pt and 9pt);
-%\node at ($(m1)+(-1.7,-0.7)$) [red] {Verarbeitungsdauer des Requests ($\mu$sec)};
-%\end{tikzpicture}
-%
-%\vspace{\baselineskip}\pause
-%
-%<<apache-treemap-load>>=
-%@
-%\end{frame}
-%
-%-----------------------------------------------------------------------------
-%\subsection{Aufbereitung der Daten}
-%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
-%
-%Aufbereitung
-%\begin{itemize}
-%\item Datentyp ändern
-%\item Formate anpassen
-%\item Attribute löschen \& hinzufügen
-%\end{itemize}
-%
-%<<apache-treemap-cleanup>>=
-%@
-%\end{frame}
-%
-%-----------------------------------------------------------------------------
-%\subsection{Resultat der Aufbereitung}
-%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
-%<<apache-treemap-tail>>=
-%@
-%\end{frame}
-%
-%-----------------------------------------------------------------------------
-%\subsection{Treemap der zeitlichen Belegung}
-%\begin{frame}[fragile]{\insertsection}{\insertsubsection}
-%<<apache-treemap-plot, small.mar=TRUE>>=
-%@
-%\end{frame}
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \stepcounter{Example}
 \section{Beispiel \theExample: Prognosen mit RRD}
