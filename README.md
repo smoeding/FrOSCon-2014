@@ -2,7 +2,8 @@
 
 Slides (in German) and code for my presentation at FrOSCon 2014.
 
-If you just want the slides: https://github.com/smoeding/FrOSCon-2014/blob/master/R4Admins.pdf
+If you just want the slides:
+https://github.com/smoeding/FrOSCon-2014/blob/master/R4Admins.pdf?raw=true
 
 ## Zusammenfassung
 
