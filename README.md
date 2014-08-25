@@ -2,6 +2,8 @@
 
 Slides (in German) and code for my presentation at FrOSCon 2014.
 
+If you just want the slides: https://github.com/smoeding/FrOSCon-2014/blob/master/R4Admins.pdf
+
 ## Zusammenfassung
 
 R, die freie Programmiersprache für statistisches Rechnen und Grafiken, ist auch für Administratoren ein nützliches Werkzeug. Dieser Vortrag beginnt mit einer kurzen Vorstellung von R und zeigt dann an einigen Beispielen, wie R sich für die Analyse von Performance-Daten nutzen lässt oder damit eine Prognose der zukünftigen Auslastung eines Systems sowie der Skalierbarkeit abgeleitet werden kann.
@@ -20,7 +22,7 @@ Mit gemessenen Performance-Daten lässt sich schließlich ein Modell zur Skalier
 
 ## Erstellung PDF
 
-Es wird `knitr` verwendet, um die Präsentation *in einem Guß* zu erstellen. Die Generierung erfordert dabei in mehreren Schritten. Zunächst wird mit R aus dem *noweb* Format ein LaTeX-Dokument erstellt:
+Es wird `knitr` verwendet, um die Präsentation *in einem Guss* zu erstellen. Die Generierung erfordert dabei in mehreren Schritten. Zunächst wird mit R aus dem *noweb* Format ein LaTeX-Dokument erstellt:
 
 ```R
 library(knitr)
